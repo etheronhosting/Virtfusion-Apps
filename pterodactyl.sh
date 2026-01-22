@@ -47,10 +47,16 @@ mkdir -p "${PANEL_DIR}"
 cd "${PANEL_DIR}"
 
 # Laatste release ophalen
-PANEL_URL="$(curl -s https://api.github.com/repos/pterodactyl/panel/releases/latest | grep browser_download_url | grep ".tar.gz" | cut -d '"' -f 4)"
-curl -L "$PANEL_URL" -o panel.tar.gz
-tar -xzf panel.tar.gz --strip-components=1
+curl -L https://github.com/pterodactyl/panel/releases/latest/download/panel.tar.gz -o panel.tar.gz
+tar -xzf panel.tar.gz
 rm -f panel.tar.gz
+
+if [ ! -f .env.example ]; then
+  echo "ERROR: .env.example ontbreekt. Inhoud van ${PANEL_DIR}:"
+  ls -la
+  exit 1
+fi
+
 
 cp .env.example .env
 composer install --no-dev --optimize-autoloader
