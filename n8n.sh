@@ -41,16 +41,15 @@ services:
     ports:
       - "80:80"
       - "443:443"
-    environment:
-      - DOMAIN=$DOMAIN
     volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - ./caddy_data:/data
       - ./caddy_config:/config
-    command: >
-      caddy reverse-proxy --from https://$DOMAIN --to n8n:5678
+    depends_on:
+      - n8n
 
   n8n:
-    image: n8nio/n8n
+    image: n8nio/n8n:latest
     restart: unless-stopped
     environment:
       - N8N_HOST=$DOMAIN
@@ -61,6 +60,13 @@ services:
     volumes:
       - /opt/n8n/n8n_data:/home/node/.n8n
 EOF
+
+cat <<EOF > Caddyfile
+$DOMAIN {
+  reverse_proxy n8n:5678
+}
+EOF
+
 
 echo "🐳 Containers starten..."
 docker-compose down || true
